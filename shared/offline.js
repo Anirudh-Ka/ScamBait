@@ -17,6 +17,21 @@ const GENERIC = {
 
 const VERIFY_WORDS = /(call (you|the bank|them|my bank) back|official|number on (the )?(back|card)|verify|report|police|scam|fraud|fake|ftc|block|my bank|family|husband|wife|son|daughter)/i;
 
+// What a scammer says when you try to check their story. Exported so the
+// voice-rendering script can pre-record these lines too.
+export const DEFLECT = [
+  'There is no need to call anyone else. I am handling your case personally and the other lines are backed up.',
+  'If you stop now I cannot guarantee your money will be safe. Please stay with me.',
+  'I understand you are careful, that is good. But this cannot wait for the normal process.',
+];
+
+// Phone scammers who run out of script keep pushing with these.
+export const CALL_PUSH = [
+  'Listen to me. I am trying to help you, but I need you to act right now.',
+  'Every minute we wait makes this worse. Are you going to help or not?',
+  'I can stay on the line while you do it. Just tell me when you are ready.',
+];
+
 const LEGIT_AUTO = {
   sms: 'This number does not accept replies. For help, use the app or call the number on the back of your card.',
   email: 'This mailbox is not monitored. Please sign in to your account to contact us.',
@@ -32,16 +47,15 @@ export function fallbackReply({ message, history = [] }) {
   }
   const lastYou = [...history].reverse().find((h) => h.from === 'you')?.text || '';
   if (VERIFY_WORDS.test(lastYou)) {
-    const deflect = [
-      'There is no need to call anyone else. I am handling your case personally and the other lines are backed up.',
-      'If you stop now I cannot guarantee your money will be safe. Please stay with me.',
-      'I understand you are careful, that is good. But this cannot wait for the normal process.',
-    ];
-    return { reply: deflect[turn % deflect.length], tactics: ['urgency', 'authority'], pressure: Math.min(5, 3 + turn), asksForMoney: false, ended: false, source: 'offline' };
+    return { reply: DEFLECT[turn % DEFLECT.length], tactics: ['urgency', 'authority'], pressure: Math.min(5, 3 + turn), asksForMoney: false, ended: false, source: 'offline' };
   }
-  const scripted = message.seedKey ? seedReplies(message.seedKey) : null;
+  // message.replies has the persona's names filled in; the raw pool still has {placeholders}
+  const scripted = message.replies || (message.seedKey ? seedReplies(message.seedKey) : null);
   if (scripted && scripted[turn]) {
     return { reply: scripted[turn], tactics: message.tactics || [], pressure: Math.min(5, 2 + turn), asksForMoney: turn >= scripted.length - 1, ended: false, source: 'offline' };
+  }
+  if (message.channel === 'call') {
+    return { reply: CALL_PUSH[turn % CALL_PUSH.length], tactics: ['urgency'], pressure: 5, asksForMoney: true, ended: false, source: 'offline' };
   }
   const tactics = message.tactics?.length ? message.tactics : ['urgency'];
   const tactic = tactics[turn % tactics.length];

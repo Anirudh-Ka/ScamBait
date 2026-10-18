@@ -21,15 +21,25 @@ npm run build
 npm start                 # http://localhost:8787
 ```
 
-With no keys at all, everything still works: built-in scenario packs, a practice account, the browser's own voice. Each key you add switches one piece to live:
+With no keys at all, everything still works: built-in scenario packs, a practice account, pre-recorded call voices. Each key you add switches one piece to live:
 
 | Key | What it turns on | Without it |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | Fresh personalized scams in 10 languages, live scammer chat, written debrief | Hand-written scenario packs, scripted chat |
-| `ELEVENLABS_API_KEY` | Real AI voices for the phone call, voicemail and read-aloud | Browser speech synthesis |
+| `ELEVENLABS_API_KEY` | Expressive AI voices (eleven_v4 with emotion tags), a different voice per caller | Pre-recorded neural voices for the built-in calls, device voice for everything else |
 | `NESSIE_API_KEY` | Real sandbox checking account per player; scam payments are P2P transfers; "play as my own customer" mode | In-memory practice account |
 
 `npm run check` runs an offline test of all three integrations against mocked APIs.
+`npm run doctor` tests your real keys with tiny requests and explains any failure.
+`npm run voices` saves one sample of each caller voice to `voice-samples/` so you can pick different ones.
+
+## How the phone call sounds real
+
+- **Expressive model.** ElevenLabs `eleven_v4` (falls back to `eleven_v3`, then older models) with performance tags in the script: `[panicked, out of breath]`, `[whispers]`, `[crying]`. Tags are stripped automatically for models that would read them aloud.
+- **A voice per caller.** Grandson or brother, daughter, fake bank officer and fake lawyer each get their own voice. Gemini picks the caller type for generated calls.
+- **It sounds like a phone.** Call and voicemail audio runs through a Web Audio telephone filter (300 to 3,400 Hz, compression, light saturation, faint line hiss), and the phone actually rings.
+- **No dead air.** The call audio is fetched when the round starts, so it plays the moment you answer.
+- **Fallbacks that still sound human.** The built-in calls ship with clips pre-recorded by Kokoro, an open-source neural voice model (`src/voices/`, regenerate with `npm run render-voices <model folder>`). Only then does it fall back to the best voice installed on the device.
 
 ## How it works
 
@@ -42,7 +52,7 @@ Express server (server/)
                every red-flag quote is verified to exist in the message or dropped
   chat.js      Gemini plays the sender, escalates pressure, deflects verification
   nessie.js    creates customer + checking account, transfers money to a "scammer" account
-  tts.js       ElevenLabs text-to-speech, cached
+  tts.js       ElevenLabs text-to-speech: model fallback chain, per-caller voices, emotion tags, cached
   debrief.js   Gemini coaching based on what fooled you
 shared/        personas, tactics, offline scenario packs, offline fallbacks (used by both sides)
 ```

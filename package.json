@@ -11,7 +11,10 @@
     "build": "vite build",
     "start": "NODE_ENV=production node server/index.js",
     "check": "node scripts/smoke.js",
-    "build:demo": "vite build --config vite.demo.config.js"
+    "build:demo": "vite build --config vite.demo.config.js",
+    "doctor": "node scripts/doctor.js",
+    "voices": "node scripts/doctor.js --voices",
+    "render-voices": "node scripts/render-voices.mjs"
   },
   "dependencies": {
     "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",

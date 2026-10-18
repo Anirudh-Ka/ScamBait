@@ -8,14 +8,19 @@ import { TacticPicker, PaySheet, Sting } from './phone/Sheets.jsx';
 import WalletPanel, { MobileBar } from './WalletPanel.jsx';
 import FieldNotes from './FieldNotes.jsx';
 import { sendMoney } from '../lib/api.js';
-import { stopSpeech } from '../lib/speech.js';
-import { scoreReport, scoreTrust, scorePaid } from '../lib/game.js';
+import { stopSpeech, prefetchSpeech } from '../lib/speech.js';
+import { scoreReport, scoreTrust, scorePaid, callerVoice, callEmotion } from '../lib/game.js';
 
 export default function Play({ round, onFinish }) {
   const { persona, scenario, sessionId, language, integrations } = round;
   const all = scenario.messages;
   const byId = useMemo(() => Object.fromEntries(all.map((m) => [m.id, m])), [all]);
   const callMsg = useMemo(() => all.find((m) => m.channel === 'call'), [all]);
+
+  // Fetch the call audio now, so it plays the instant the player answers.
+  useEffect(() => {
+    if (callMsg) prefetchSpeech(callMsg.spoken || callMsg.body, { voice: callerVoice(callMsg), emotion: callEmotion(callMsg) });
+  }, [callMsg]);
 
   const [account, setAccount] = useState(round.account);
   const [results, setResults] = useState({});

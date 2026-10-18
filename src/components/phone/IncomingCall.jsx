@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Phone, PhoneOff, Mic, Hand } from 'lucide-react';
-import { speak, stopSpeech } from '../../lib/speech.js';
-import { voiceFor } from '../../lib/game.js';
+import { speak, stopSpeech, startRingtone, unlockAudio } from '../../lib/speech.js';
+import { callerVoice, callEmotion } from '../../lib/game.js';
 
 function useTimer(running) {
   const [s, setS] = useState(0);
@@ -31,12 +31,20 @@ export default function IncomingCall({ message, stage, language, onAnswer, onDec
   const answerRef = useRef(null);
 
   useEffect(() => {
-    if (stage === 'ringing') answerRef.current?.focus({ preventScroll: true });
+    if (stage !== 'ringing') return;
+    answerRef.current?.focus({ preventScroll: true });
+    const stopRing = startRingtone();
+    return stopRing;
+  }, [stage]);
+
+  useEffect(() => {
     if (stage !== 'active') return;
     setProgress(0);
     setDone(false);
-    speak(message.body, {
-      voice: voiceFor(message),
+    speak(message.spoken || message.body, {
+      voice: callerVoice(message),
+      emotion: callEmotion(message),
+      phone: true,
       language,
       onProgress: setProgress,
       onSource: setSource,
@@ -72,7 +80,15 @@ export default function IncomingCall({ message, stage, language, onAnswer, onDec
             <RoundButton onClick={onDecline} label="Decline" tone="red">
               <PhoneOff size={28} aria-hidden="true" />
             </RoundButton>
-            <RoundButton buttonRef={answerRef} onClick={onAnswer} label="Answer" tone="green">
+            <RoundButton
+              buttonRef={answerRef}
+              onClick={() => {
+                unlockAudio();
+                onAnswer();
+              }}
+              label="Answer"
+              tone="green"
+            >
               <Phone size={28} aria-hidden="true" />
             </RoundButton>
           </div>
@@ -80,7 +96,7 @@ export default function IncomingCall({ message, stage, language, onAnswer, onDec
       ) : (
         <>
           <div className="mt-6 flex-1 min-h-0 flex flex-col">
-            <p className="text-sm font-semibold text-foam/70 flex items-center gap-2">
+            <p className="text-sm font-semibold text-foam/70 flex items-center gap-2" data-voice-source={source}>
               <span className={`w-2 h-2 rounded-full ${done ? 'bg-foam/40' : 'bg-bobber-bright'}`} aria-hidden="true" />
               Live captions{source === 'elevenlabs' ? ', AI voice by ElevenLabs' : ''}
             </p>

@@ -7,7 +7,7 @@ import { generateScenario } from './scenario.js';
 import { scammerReply } from './chat.js';
 import { writeDebrief } from './debrief.js';
 import { setupAccount, sendMoney, getAccount } from './nessie.js';
-import { speak } from './tts.js';
+import { speak, ttsStatus } from './tts.js';
 import { getPersona } from '../shared/personas.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,7 +42,7 @@ const wrap = (fn) => async (req, res) => {
 };
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, integrations: integrationStatus(), models: config.gemini.models });
+  res.json({ ok: true, integrations: integrationStatus(), models: config.gemini.models, voice: { models: config.eleven.models, ...ttsStatus } });
 });
 
 app.post(
@@ -92,8 +92,8 @@ app.post(
   '/api/tts',
   limit('tts', 200),
   wrap(async (req, res) => {
-    const { text, voice } = req.body || {};
-    const audio = await speak({ text, voice });
+    const { text, voice, emotion } = req.body || {};
+    const audio = await speak({ text, voice, emotion });
     if (!audio) return res.status(204).end();
     res.set('Content-Type', 'audio/mpeg');
     res.set('Cache-Control', 'private, max-age=3600');
@@ -123,6 +123,6 @@ app.listen(config.port, () => {
   const s = integrationStatus();
   console.log(`ScamBait API on http://localhost:${config.port}`);
   console.log(`  Gemini:     ${s.gemini ? 'on (' + config.gemini.models[0] + ')' : 'off, using built-in scenarios'}`);
-  console.log(`  ElevenLabs: ${s.elevenlabs ? 'on (' + config.eleven.model + ')' : 'off, using browser speech'}`);
+  console.log(`  ElevenLabs: ${s.elevenlabs ? 'on (' + config.eleven.models.join(' > ') + ')' : 'off, using recorded and device voices'}`);
   console.log(`  Nessie:     ${s.nessie ? 'on' : 'off, using a mock account'}`);
 });

@@ -46,6 +46,28 @@ export function methodNote(method = '') {
   return METHOD_NOTES.find(([re]) => re.test(method))?.[1] || 'Money sent to a scammer is rarely recovered.';
 }
 
-export function voiceFor(message) {
-  return message.scamType === 'voice_clone' ? 'family' : 'scammer';
+// Who is speaking on a call: young_male, young_female, adult_male, ...
+export function callerVoice(message) {
+  if (message.voice) return message.voice;
+  return message.scamType === 'voice_clone' ? 'young_male' : 'adult_male';
 }
+
+// Who answers when you talk back. In the built-in "grandson" call, the fake
+// lawyer takes over; generated calls keep the same speaker.
+export function replyVoice(message) {
+  return message.replyVoice || callerVoice(message);
+}
+
+// How the opening of the call is delivered.
+export function callEmotion(message) {
+  if (message.scamType === 'voice_clone') return 'panicked';
+  if (['impersonation', 'fake_regulator', 'recovery'].includes(message.scamType)) return 'official';
+  return 'friendly';
+}
+
+export function replyEmotion(message, pressure = 3) {
+  if (message.scamType === 'voice_clone' && !message.replyVoice) return 'panicked';
+  return pressure >= 4 ? 'pushy' : callEmotion(message) === 'official' ? 'official' : 'friendly';
+}
+
+export const voiceFor = callerVoice;

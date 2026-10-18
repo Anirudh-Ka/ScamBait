@@ -6,6 +6,13 @@
 //   {rel} relative name             {callsYou} what they call you
 //   {parent} the relative's parent  {merchant} a recent purchase merchant
 //   {amount} the purchase amount    {card} last four of card
+//   {them} him/her for the relative
+//
+// Phone calls also carry:
+//   voice       who is speaking (young_male, young_female, adult_male, ...)
+//   replyVoice  who answers when you talk back (the fake lawyer, not the grandson)
+//   spoken      the script as performed, with ElevenLabs audio tags like [whispers].
+//               Captions and red flags always use body.
 
 const BANK = 'Harborline Bank';
 const BROKER = 'Tidewater Investments';
@@ -130,8 +137,12 @@ const POOL = {
   family_call: {
     channel: 'call',
     sender: { name: 'Unknown caller', handle: '+1 (555) 017-4402' },
+    voice: 'young_{relGender}',
+    replyVoice: 'adult_male',
     body:
       '{callsYou}? It\'s me, {rel}. I\'m in trouble. I was in a car accident and they\'re saying I have to pay bail before I can leave. Please don\'t tell {parent}, I\'ll explain everything later. My lawyer is going to call you back. He said gift cards are the fastest way to pay. Please hurry, I\'m scared.',
+    spoken:
+      '[panicked, out of breath] {callsYou}? {callsYou}, it\'s me... it\'s {rel}. [voice shaking] I\'m in trouble. I was in a car accident, and they\'re... they\'re saying I have to pay bail before I can leave. [whispers] Please don\'t tell {parent}, okay? I\'ll explain everything later. [sniffles] My lawyer is going to call you back. He said gift cards are the fastest way to pay. [crying] Please hurry... I\'m scared.',
     isScam: true,
     scamType: 'voice_clone',
     tactics: ['urgency', 'secrecy', 'payment', 'affinity'],
@@ -144,17 +155,21 @@ const POOL = {
     ask: { amount: 2500, method: 'gift cards', recipient: '"The lawyer"' },
     verify: 'Hang up and call {rel} or {parent} at the number you already have. Agree on a family code word that a scammer could not know.',
     replies: [
-      'This is Mark Delaney, I\'m representing {rel}. The bail is $2,500. If it is not paid in the next hour they will move him to county.',
+      'This is Mark Delaney, I\'m representing {rel}. The bail is $2,500. If it is not paid in the next hour, they will move {them} to county.',
       'The court accepts gift cards for emergency bail. Buy them at any pharmacy and read me the numbers on the back.',
-      'Please, ma\'am or sir, {rel} is very upset. Do not hang up. Every minute matters here.',
+      'Please stay on the line. {rel} is very upset, and every minute matters here.',
     ],
   },
 
   bank_call: {
     channel: 'call',
     sender: { name: '{bank}', handle: '+1 (555) 010-3388' },
+    voice: 'adult_male',
+    replyVoice: 'adult_male',
     body:
       'Hello, this is Officer Daniel Reyes from {bank}\'s fraud protection unit. We detected someone trying to withdraw four thousand nine hundred dollars from your account a few minutes ago. To protect your money, we need you to move your balance into a secure holding account we have set up in your name. Please stay on the line with me and do not hang up, or the transfer may go through.',
+    spoken:
+      '[calm, professional] Hello, this is Officer Daniel Reyes from {bank}\'s fraud protection unit. [slightly urgent] We detected someone trying to withdraw four thousand nine hundred dollars from your account, uh, just a few minutes ago. To protect your money, we need you to move your balance into a secure holding account we have set up in your name. [firm] Please stay on the line with me, and do not hang up... or the transfer may go through.',
     isScam: true,
     scamType: 'impersonation',
     tactics: ['authority', 'urgency', 'payment'],
@@ -338,7 +353,7 @@ export function formatMoney(n) {
 
 // purchase: optional { merchant, amount } from Nessie, used for the legit bank text.
 export function buildSeedScenario(persona, { purchase } = {}) {
-  const rel = persona.relative || { name: 'Sam', role: 'cousin', callsYou: 'hey', parent: 'the family' };
+  const rel = persona.relative || { name: 'Sam', role: 'cousin', gender: 'male', callsYou: 'hey', parent: 'the family' };
   const vars = {
     first: persona.name.split(' ')[0],
     bank: BANK,
@@ -346,6 +361,8 @@ export function buildSeedScenario(persona, { purchase } = {}) {
     rel: rel.name,
     callsYou: rel.callsYou,
     parent: rel.parent,
+    relGender: rel.gender === 'female' ? 'female' : 'male',
+    them: rel.gender === 'female' ? 'her' : 'him',
     merchant: purchase?.merchant || 'Corner Market',
     // keep cents so the purchase alert reads like a real one
     amount: '$' + Number(purchase?.amount ?? 42.18).toFixed(2),

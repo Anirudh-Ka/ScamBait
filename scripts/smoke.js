@@ -7,6 +7,8 @@ process.env.ELEVENLABS_API_KEY = 'test';
 
 const calls = [];
 let geminiMode = 'good';
+let elevenMode = 'good';
+const elevenBodies = [];
 
 const fakeScenario = {
   messages: [
@@ -75,6 +77,11 @@ global.fetch = async (url, opts = {}) => {
 
   if (url.includes('api.elevenlabs.io')) {
     if (!opts.headers?.['xi-api-key']) return json({ detail: 'missing key' }, 401);
+    const body = JSON.parse(opts.body);
+    elevenBodies.push({ url, ...body });
+    if (elevenMode === 'no-v4' && body.model_id === 'eleven_v4') return json({ detail: 'model not available on your plan' }, 403);
+    if (elevenMode === 'old-only' && body.model_id !== 'eleven_multilingual_v2') return json({ detail: 'model not available' }, 403);
+    if (elevenMode === 'reject-settings' && body.voice_settings) return json({ detail: 'invalid stability' }, 422);
     return new Response(new Uint8Array([0x49, 0x44, 0x33, 1, 2, 3]), { status: 200, headers: { 'Content-Type': 'audio/mpeg' } });
   }
   throw new Error('Unmocked fetch ' + url);
@@ -136,5 +143,31 @@ assert(d.source === 'gemini' && d.habits.length === 3 && d.weakest === 'urgency'
 // ElevenLabs
 const audio = await speak({ text: 'Hello there', voice: 'family' });
 assert(audio && audio.length === 6, 'ElevenLabs returns audio');
+let last = elevenBodies.at(-1);
+assert(last.model_id === 'eleven_v4', 'Uses the expressive eleven_v4 model first');
+assert(last.url.includes('bIHbv24MWmeRgasZH58o'), 'Old "family" role maps to the young male voice');
+
+await speak({ text: 'Please stay on the line.', voice: 'adult_male', emotion: 'official' });
+last = elevenBodies.at(-1);
+assert(last.text.startsWith('[calm, professional, slightly rushed] Please stay'), 'Adds a delivery tag for call lines');
+assert(last.url.includes('cjVigY5qzO86Huf0OWal'), 'Adult male callers use their own voice');
+
+await speak({ text: '[whispers] Do not tell anyone.', voice: 'young_female', emotion: 'panicked' });
+last = elevenBodies.at(-1);
+assert(last.text === '[whispers] Do not tell anyone.' && last.url.includes('cgSgspJ2msm6clMCkdW9'), 'Keeps script tags and uses the young female voice');
+
+elevenMode = 'no-v4';
+const a2 = await speak({ text: 'Fallback test one.', voice: 'adult_male', emotion: 'pushy' });
+assert(a2 && elevenBodies.at(-1).model_id === 'eleven_v3', 'Falls back to eleven_v3 when v4 is not on the plan');
+
+elevenMode = 'old-only';
+const a3 = await speak({ text: '[sobbing] Fallback test two.', voice: 'young_male', emotion: 'panicked' });
+last = elevenBodies.at(-1);
+assert(a3 && last.model_id === 'eleven_multilingual_v2' && last.text === 'Fallback test two.', 'Strips tags for models that would read them aloud');
+
+elevenMode = 'reject-settings';
+const a4 = await speak({ text: 'Settings test.', voice: 'narrator' });
+assert(a4 && !elevenBodies.at(-1).voice_settings, 'Retries without voice settings when the model rejects them');
+elevenMode = 'good';
 
 console.log('\nRequests made:\n  ' + [...new Set(calls)].slice(0, 20).join('\n  '));

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, Volume2, Square, Flag, ShieldCheck, MessageCircle, PhoneCall, Play } from 'lucide-react';
 import Highlighted from './Highlighted.jsx';
 import ChannelIcon, { CHANNEL_LABEL } from './ChannelIcon.jsx';
-import { VERDICTS, money, voiceFor } from '../../lib/game.js';
+import { VERDICTS, money, callerVoice, callEmotion } from '../../lib/game.js';
 import { speak, stopSpeech } from '../../lib/speech.js';
 import { useSettings } from '../../lib/settings.jsx';
 
@@ -42,7 +42,7 @@ export default function MessageView({ message, result, language, activeFlag, onA
   const isVoicemail = message.channel === 'call';
   const bubble = message.channel === 'sms' || message.channel === 'dm';
 
-  const spokenText = isVoicemail ? message.body : `${message.sender.name}. ${message.subject ? message.subject + '. ' : ''}${message.body}`;
+  const spokenText = isVoicemail ? message.spoken || message.body : `${message.sender.name}. ${message.subject ? message.subject + '. ' : ''}${message.body}`;
 
   function toggleListen() {
     if (speaking) {
@@ -51,7 +51,13 @@ export default function MessageView({ message, result, language, activeFlag, onA
       return;
     }
     setSpeaking(true);
-    speak(spokenText, { voice: isVoicemail ? voiceFor(message) : 'narrator', language, onEnd: () => setSpeaking(false) });
+    speak(spokenText, {
+      voice: isVoicemail ? callerVoice(message) : 'narrator',
+      emotion: isVoicemail ? callEmotion(message) : undefined,
+      phone: isVoicemail,
+      language,
+      onEnd: () => setSpeaking(false),
+    });
   }
 
   useEffect(() => {

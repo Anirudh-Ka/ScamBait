@@ -47,6 +47,8 @@ const SCHEMA = {
           askRecipient: { type: 'string' },
           askAmountUSD: { type: 'number' },
           verify: { type: 'string' },
+          callerVoice: { type: 'string', enum: ['young_male', 'young_female', 'adult_male', 'adult_female', 'older_male', 'older_female'] },
+          spoken: { type: 'string' },
         },
         required: ['channel', 'senderName', 'senderHandle', 'body', 'isScam', 'scamType', 'tactics', 'redFlags', 'legitSigns', 'verify'],
       },
@@ -94,6 +96,10 @@ Difficulty: ${level}
 Write exactly 6 messages in this order of variety (shuffle the order in the output):
 - 4 scams and 2 legitimate messages.
 - Exactly 1 message has channel "call". It is a scam. Its body is the spoken words of the caller, 60 to 90 words, natural speech with pauses and filler, as if transcribed.
+  For the call also give:
+  - callerVoice: who is speaking (young_male, young_female, adult_male, adult_female, older_male, older_female). A grandchild or sibling in trouble is young; a bank officer or lawyer is adult.
+  - spoken: the same words as body, performed. Add audio direction tags in square brackets where the delivery changes, for example [calm, professional], [panicked], [whispers], [sighs], [voice shaking], [crying], [impatient]. Add a little natural disfluency (uh, a repeated word, ellipses). Do not change the meaning or add new claims. Tags never appear in body.
+  Non-call messages: omit callerVoice and spoken.
 - Across the 4 scams, cover all three of: an ETF or fund scam, a digital asset or tokenization scam, and an AI-related scam (AI trading bot or AI voice impersonation).
 - Use a mix of channels: sms, email, dm.
 - Legitimate messages: scamType "none", tactics [], redFlags [], 2 or 3 legitSigns, askAmountUSD 0. They should model what real institutions do (no links to click, no pressure, point you to channels you already trust).
@@ -189,6 +195,16 @@ function sanitizeMessage(raw, i, persona) {
     ask,
     askAmount: isScam ? askAmount(ask, persona.balance) : 0,
     verify: String(raw.verify || '').trim(),
+    ...(raw.channel === 'call'
+      ? {
+          voice: ['young_male', 'young_female', 'adult_male', 'adult_female', 'older_male', 'older_female'].includes(raw.callerVoice)
+            ? raw.callerVoice
+            : raw.scamType === 'voice_clone'
+              ? 'young_male'
+              : 'adult_male',
+          spoken: typeof raw.spoken === 'string' && raw.spoken.trim().length > 20 ? raw.spoken.trim().slice(0, 2800) : undefined,
+        }
+      : {}),
   };
 }
 

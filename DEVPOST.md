@@ -40,7 +40,7 @@ With Nessie connected, you can also **play as your own bank customer**: Gemini r
 - **Frontend:** React 19, Vite and Tailwind CSS 4. One phone UI with an inbox, message view, chat thread and incoming-call screen.
 - **Backend:** Node and Express, one process serving the API and the built site, deployed on Vultr.
 - **Google Gemini (gemini-3.8-flash):** three jobs. It writes each day's inbox as structured JSON from a schema (sender, channel, body, scam type, tactics, red flags with exact quotes, the legit signs on real messages, what the scam would take, and how to verify). It plays the scammer in live chat with escalating pressure. It writes the personalized debrief.
-- **ElevenLabs (eleven_flash_v2_5):** the phone call, voicemail and read-aloud, in the player's language.
+- **ElevenLabs (eleven_v4):** the phone call, voicemail and read-aloud, in the player's language. Each caller type gets its own voice, scripts carry performance tags like [panicked] and [whispers], and call audio runs through a telephone filter we built with the Web Audio API, so it sounds like a real call instead of a studio recording. The call audio is fetched as the round starts so it plays the instant you answer.
 - **Capital One Nessie:** creates a customer and checking account per player, records everyday purchases, and turns every scam payment into a real P2P transfer.
 
 The part we're proudest of technically is that **Gemini's output is verified, not trusted.** Every red-flag quote must appear character for character in its message, or it's dropped. A scam with no verifiable red flags is thrown out. If Gemini forgets the phone call, we inject one. If a model or a request field is rejected, the server falls back to simpler requests and other models, and if Gemini is unavailable entirely, hand-written scenario packs take over. Even if the server dies mid-demo, the browser plays on with the same offline logic.
@@ -63,7 +63,7 @@ The part we're proudest of technically is that **Gemini's output is verified, no
 
 - The moment the call comes in, mid-game, in a voice that sounds like family.
 - The highlighter reveal: seeing exactly which words fooled you lands harder than any list of tips.
-- A demo that cannot break: every integration has an offline fallback.
+- A demo that cannot break: every integration has an offline fallback. Even the built-in phone calls ship pre-recorded with Kokoro, an open-source neural voice model, so they sound human with no internet.
 
 ## What we learned
 

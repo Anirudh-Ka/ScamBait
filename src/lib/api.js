@@ -45,6 +45,11 @@ export function newSessionId() {
 }
 
 export async function getHealth() {
+  // Opened straight from a file: there is no server to ask.
+  if (typeof location !== 'undefined' && location.protocol === 'file:') {
+    offline = true;
+    return { ok: false, offline: true, integrations: { gemini: false, elevenlabs: false, nessie: false } };
+  }
   try {
     const res = await fetch('/api/health');
     if (!res.ok) throw new Error();
@@ -121,13 +126,13 @@ export async function getDebrief({ persona, results, lost, saved, language }) {
 }
 
 // Returns an audio Blob from ElevenLabs, or null when it isn't available.
-export async function fetchSpeech({ text, voice }) {
+export async function fetchSpeech({ text, voice, emotion }) {
   if (offline) return null;
   try {
     const res = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voice }),
+      body: JSON.stringify({ text, voice, emotion }),
     });
     if (res.status !== 200) return null;
     return await res.blob();

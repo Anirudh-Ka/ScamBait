@@ -12,13 +12,30 @@ export const config = {
   },
   eleven: {
     key: process.env.ELEVENLABS_API_KEY || '',
-    // eleven_flash_v2_5: ~75 ms latency, 32 languages, cheapest per character.
-    model: process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5',
-    // Default premade voices. Override with your own voice IDs from the ElevenLabs voice library.
+    // Tried in order. eleven_v4 and eleven_v3 are the expressive models that follow
+    // emotion tags like [panicked] or [whispers]; the older ones are fallbacks
+    // for plans or regions where those aren't available (tags are stripped for them).
+    models: (process.env.ELEVENLABS_MODEL || 'eleven_v4,eleven_v3,eleven_multilingual_v2,eleven_flash_v2_5')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    // One voice per kind of caller, all from ElevenLabs' default (non-legacy) voices.
+    // Override any of them with a voice ID from the ElevenLabs voice library.
     voices: {
-      scammer: process.env.ELEVENLABS_VOICE_SCAMMER || 'JBFqnCBsd6RMkjVDRZzb',
-      narrator: process.env.ELEVENLABS_VOICE_NARRATOR || process.env.ELEVENLABS_VOICE_SCAMMER || 'JBFqnCBsd6RMkjVDRZzb',
-      family: process.env.ELEVENLABS_VOICE_FAMILY || process.env.ELEVENLABS_VOICE_SCAMMER || 'JBFqnCBsd6RMkjVDRZzb',
+      // Grandson / brother in the "I'm in trouble" call. Will: young American, casual.
+      young_male: process.env.ELEVENLABS_VOICE_YOUNG_MALE || process.env.ELEVENLABS_VOICE_FAMILY || 'bIHbv24MWmeRgasZH58o',
+      // Daughter in the "I'm in trouble" call. Jessica: young American, expressive, conversational.
+      young_female: process.env.ELEVENLABS_VOICE_YOUNG_FEMALE || 'cgSgspJ2msm6clMCkdW9',
+      // Fake bank officer, fake lawyer, fake broker. Eric: American, friendly, conversational.
+      adult_male: process.env.ELEVENLABS_VOICE_ADULT_MALE || process.env.ELEVENLABS_VOICE_SCAMMER || 'cjVigY5qzO86Huf0OWal',
+      // Female officials. Sarah: young American, soft, newsreader polish.
+      adult_female: process.env.ELEVENLABS_VOICE_ADULT_FEMALE || 'EXAVITQu4vr4xnSDxMaL',
+      // Older callers. Bill: older American, trustworthy.
+      older_male: process.env.ELEVENLABS_VOICE_OLDER_MALE || 'pqHfZKP75CvOlQylNhV4',
+      // Matilda: middle-aged American, friendly.
+      older_female: process.env.ELEVENLABS_VOICE_OLDER_FEMALE || 'XrExE9yKIg1WjnnlVkGX',
+      // Reads messages aloud. Matilda again: clear and warm, not a phone voice.
+      narrator: process.env.ELEVENLABS_VOICE_NARRATOR || 'XrExE9yKIg1WjnnlVkGX',
     },
   },
   nessie: {

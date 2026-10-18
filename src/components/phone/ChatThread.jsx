@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, SendHorizontal, PhoneCall, Ban, Banknote } from 'lucide-react';
 import { scammerReply } from '../../lib/api.js';
 import { speak, stopSpeech } from '../../lib/speech.js';
-import { voiceFor } from '../../lib/game.js';
+import { replyVoice, replyEmotion } from '../../lib/game.js';
 
 function quickReplies(message, mode) {
   if (!message.isScam) return ['Thanks!', 'Who is this?'];
@@ -58,7 +58,7 @@ export default function ChatThread({ message, mode, persona, language, history, 
       setPressure(r.pressure || 3);
       if (message.isScam && (r.asksForMoney || withReply.filter((h) => h.from === 'them').length >= 2)) setCanPay(true);
       if (r.ended) setEnded(true);
-      if (isCall) speak(r.reply, { voice: voiceFor(message), language });
+      if (isCall) speak(r.reply, { voice: replyVoice(message), emotion: replyEmotion(message, r.pressure), phone: true, language });
     } catch (e) {
       setError(e.message || 'They did not answer. Try again.');
     } finally {

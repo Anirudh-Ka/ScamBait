@@ -14,7 +14,7 @@ export const PERSONAS = [
     balance: 8400,
     defaultLanguage: 'Spanish',
     avatar: 'R',
-    relative: { name: 'Mateo', role: 'grandson', callsYou: 'Abuela', parent: 'your mom' },
+    relative: { name: 'Mateo', role: 'grandson', gender: 'male', callsYou: 'Abuela', parent: 'my mom' },
   },
   {
     id: 'priya',
@@ -28,7 +28,7 @@ export const PERSONAS = [
     balance: 1250,
     defaultLanguage: 'English',
     avatar: 'P',
-    relative: { name: 'Arjun', role: 'younger brother', callsYou: 'Didi', parent: 'Amma' },
+    relative: { name: 'Arjun', role: 'younger brother', gender: 'male', callsYou: 'Didi', parent: 'Amma' },
   },
   {
     id: 'linh',
@@ -42,7 +42,7 @@ export const PERSONAS = [
     balance: 5600,
     defaultLanguage: 'Vietnamese',
     avatar: 'L',
-    relative: { name: 'Bao', role: 'younger brother', callsYou: 'Chị Linh', parent: 'Mẹ' },
+    relative: { name: 'Bao', role: 'younger brother', gender: 'male', callsYou: 'Chị Linh', parent: 'Mẹ' },
   },
   {
     id: 'devon',
@@ -56,7 +56,7 @@ export const PERSONAS = [
     balance: 12000,
     defaultLanguage: 'English',
     avatar: 'D',
-    relative: { name: 'Jordan', role: 'daughter', callsYou: 'Dad', parent: 'your mom' },
+    relative: { name: 'Jordan', role: 'daughter', gender: 'female', callsYou: 'Dad', parent: 'Mom' },
   },
 ];
 
