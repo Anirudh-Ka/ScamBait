@@ -1,10 +1,16 @@
 # ScamBait
 
-**An app that scams you on purpose, so real scammers can't.**
+**Worried your parents or grandparents might fall for a scam? ScamBait lets them practice against AI-written texts, emails and calls that feel like the real thing, before the real one arrives.**
+
+![A fake bank text with its red flags highlighted and explained](docs/screenshots/red-flags.png)
 
 You play one day on someone's phone: a retiree on a fixed income, a first-gen college student, a nurse who sends money home, or a man rolling over his 401(k). Texts, emails, DMs and a phone call arrive. Some are scams that Google Gemini wrote for that exact person, in their language. Some are real. Report it, trust it, or reply and argue with an AI playing the scammer. Trust a scam and money actually leaves a Capital One Nessie sandbox account. Then every red flag gets highlighted and explained, and the debrief shows which tactics work on you.
 
 Built at Technica 2026.
+
+| The phone rings | Fall for it and the money leaves | What gets you |
+| --- | --- | --- |
+| ![Incoming scam call with live captions](docs/screenshots/phone-call.png) | ![Money sent to a scammer from a sandbox account](docs/screenshots/money-gone.png) | ![Debrief showing which tactics worked](docs/screenshots/what-gets-you.png) |
 
 ## Run it (2 minutes)
 

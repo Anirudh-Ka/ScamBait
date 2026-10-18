@@ -1,6 +1,6 @@
 # ScamBait: Devpost draft
 
-**Tagline:** An app that scams you on purpose, so real scammers can't.
+**Elevator pitch:** Worried your parents or grandparents might fall for a scam? ScamBait lets them practice against AI-written texts, emails and calls that feel like the real thing, before the real one arrives.
 
 **Tracks to submit to**
 - Sponsored (all three can win): T. Rowe Price NextGen Finance, Capital One Best Use of Nessie, MLH Best Use of Gemini API. ElevenLabs is a strong alternate for the third slot if you'd rather.
@@ -12,7 +12,7 @@
 
 Americans reported losing a record $15.9 billion to fraud in 2025, and nearly half of it, $7.9 billion, went to fake investments. Text messages were the most common way scammers made first contact.
 
-Every one of us has someone in our life who almost fell for one: a grandparent who got the "I'm in jail, don't tell Mom" call, a friend who "invested" in a crypto group chat, a parent who got a perfect copy of their bank's text. The advice they got afterward was always the same list of tips. Tips don't work, because scams don't feel like scams while they're happening. They feel urgent, official and personal.
+Most of us have someone we quietly worry about: a grandparent who answers every call, a parent who trusts anything that looks like it came from their bank. Telling them "watch out for scams" doesn't work, because scams don't feel like scams while they're happening. They feel urgent, official and personal. The only way to get better at spotting them is practice.
 
 So we built the opposite of a tip sheet: a place where you get scammed, safely, by scams written for you.
 
@@ -27,7 +27,7 @@ Then your phone starts buzzing. Over one in-game day you get six messages:
 
 For each one you can **report it**, **trust it**, or **reply**. Replies go to Gemini playing the scammer, who escalates pressure and deflects every attempt to verify, exactly like the real thing. A live pressure meter shows it happening.
 
-Halfway through, **the phone rings**. An ElevenLabs voice plays the caller with live captions. Hang up, talk back, or do what they say.
+Partway through the day, **the phone rings**. An ElevenLabs voice plays the caller with live captions. Hang up, talk back, or do what they say.
 
 **Trust a scam and the money really leaves.** Each player gets a real Capital One Nessie sandbox checking account, and paying a scammer is executed as a peer-to-peer transfer to a "scammer" account. The balance drops, the transaction appears in the account history, and then the message lights up: every red flag is swiped with a highlighter and explained in plain language, along with how to check safely next time.
 
@@ -38,7 +38,7 @@ With Nessie connected, you can also **play as your own bank customer**: Gemini r
 ## How we built it
 
 - **Frontend:** React 19, Vite and Tailwind CSS 4. One phone UI with an inbox, message view, chat thread and incoming-call screen.
-- **Backend:** Node and Express, one process serving the API and the built site, deployed on Vultr.
+- **Backend:** Node and Express, one process serving the API and the built site.
 - **Google Gemini (gemini-3.8-flash):** three jobs. It writes each day's inbox as structured JSON from a schema (sender, channel, body, scam type, tactics, red flags with exact quotes, the legit signs on real messages, what the scam would take, and how to verify). It plays the scammer in live chat with escalating pressure. It writes the personalized debrief.
 - **ElevenLabs (eleven_v4):** the phone call, voicemail and read-aloud, in the player's language. Each caller type gets its own voice, scripts carry performance tags like [panicked] and [whispers], and call audio runs through a telephone filter we built with the Web Audio API, so it sounds like a real call instead of a studio recording. The call audio is fetched as the round starts so it plays the instant you answer.
 - **Capital One Nessie:** creates a customer and checking account per player, records everyday purchases, and turns every scam payment into a real P2P transfer.
@@ -78,7 +78,7 @@ The part we're proudest of technically is that **Gemini's output is verified, no
 
 ## Built with
 
-react, vite, tailwindcss, node.js, express, google-gemini, elevenlabs, capital-one-nessie, vultr
+react, vite, tailwindcss, javascript, node.js, express.js, google-gemini, elevenlabs, capital-one-nessie, web-audio-api, kokoro
 
 ## Sources
 
